@@ -33,7 +33,7 @@ export const chatApi = {
   // Acepta un array de mensajes y una función opcional para manejar chunks de respuesta
   sendMessage: async (messages: Message[], onChunk: (chunk: ChatResponse) => void): Promise<ChatResponse> => {
     // Si hay función de callback, configura streaming de datos
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000/api'}/chat`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001/api'}/chat`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
