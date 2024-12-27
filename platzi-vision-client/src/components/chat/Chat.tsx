@@ -66,16 +66,18 @@ export const Chat = () => {
 
       // Enviar el mensaje a través de la API
       await chatApi.sendMessage([...messages, newMessage], (chunk) => {
+        console.log('Chunk recibido en el CHAT:', chunk, messages);
         if (chunk.status === 'streaming' && chunk.content) {
           setStreamingMessage(chunk.content);
         } else if (chunk.status === 'generating_image') {
           // Add a temporary message while the image is being generated
-          setStreamingMessage('Generando imagen...');
+          setStreamingMessage('Generando imagen desde el chunk...');
         } else if (chunk.status === 'done' && chunk.content) {
           const assistantMessage: Message = {
             role: 'assistant',
             content: chunk.content,
           };
+          console.log('Assistant message:', assistantMessage);
           setMessages(prev => [...prev, assistantMessage]);
           setStreamingMessage('');
         }

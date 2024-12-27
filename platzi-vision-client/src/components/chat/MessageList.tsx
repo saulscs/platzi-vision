@@ -12,6 +12,8 @@ interface MessageListProps {
 }
 
 export const MessageList = ({ messages, streamingMessage }: MessageListProps) => {
+  console.log('STREAMINGMESSAGE:', streamingMessage);
+  console.log('MESSAGES:', messages);
   // Referencia para el scroll automático
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -47,17 +49,28 @@ export const MessageList = ({ messages, streamingMessage }: MessageListProps) =>
             })}
           >
             {/* Renderizado del contenido markdown del mensaje */}
-            <Markdown
-              components={{
-                // Configuración personalizada para imágenes en markdown
-                img: ({...props }) => {
-                  return <img {...props} className="rounded-xl my-2.5" />;
-                },
-              }}
-            >
-              {message.content}
-            </Markdown>
-
+            {message.content.startsWith("http") ? (
+              <div className="flex justify-center">
+                <Image
+                  src={message.content}
+                  alt="Generated image"
+                  width={300}
+                  height={300}
+                  className="rounded-xl"
+                />
+              </div>
+            ) : (
+              // Renderizar texto si no es una URL
+              <Markdown
+                components={{
+                  img: ({ ...props }) => {
+                    return <img {...props} className="rounded-xl my-2.5" />;
+                  },
+                }}
+              >
+                {message.content}
+              </Markdown>
+            )}
             {/* Renderizado de imágenes adjuntas al mensaje */}
             {message.image_data && (
               <div className="mt-3 flex gap-2 flex-wrap">

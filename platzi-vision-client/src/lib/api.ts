@@ -33,6 +33,7 @@ export const chatApi = {
   // Acepta un array de mensajes y una función opcional para manejar chunks de respuesta
   sendMessage: async (messages: Message[], onChunk: (chunk: ChatResponse) => void): Promise<ChatResponse> => {
     // Si hay función de callback, configura streaming de datos
+    console.log('Sending messages:', messages);
     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5001/api'}/chat`, {
       method: 'POST',
       headers: {
@@ -52,30 +53,40 @@ export const chatApi = {
     while (true) {
       // Lee chunks de datos del stream
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {
+        console.log('Stream terminado.');
+        break;
+      }
+
 
       // Decodifica y procesa cada chunk
       const chunk = decoder.decode(value);
+       console.log('Chunk recibido del stream:', chunk);
       const lines = chunk.split('\n');
-
+      console.log('Lines:', lines);
       // Procesa cada línea del chunk
       for (const line of lines) {
         if (line.startsWith('data: ')) {
           const jsonStr = line.slice(6);
+          console.log('JSON string:', jsonStr);
           try {
             const data = JSON.parse(jsonStr);
             console.log('Parsed SSE data:', data);
-            
             // Maneja diferentes estados de la respuesta
             if (data.status === 'streaming' && data.content) {
               // Acumula el contenido del mensaje y notifica
               accumulatedMessage += data.content;
+              console.log('Accumulated message:', accumulatedMessage);
               onChunk({ content: accumulatedMessage, status: 'streaming' });
             } else if (data.status === 'generating_image') {
               // Notifica cuando comienza la generación de imagen
-              onChunk({ content: 'Generando imagen...', status: 'generating_image' });
+              onChunk({ content: accumulatedMessage, status: 'generating_image' });
             } else if (data.status === 'done') {
               // Finaliza el streaming y retorna el mensaje completo
+              console.log('Final message:', accumulatedMessage);
+              if (data.content) {
+                accumulatedMessage += data.content;
+              }
               onChunk({ content: accumulatedMessage, status: 'done' });
               return { content: accumulatedMessage, status: 'done' };
             }
